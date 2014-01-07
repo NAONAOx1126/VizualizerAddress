@@ -35,27 +35,30 @@ class VizualizerAddress_Module_ZipAddress extends Vizualizer_Plugin_Module
     {
         $post = Vizualizer::request();
         if (!empty($post["search_zip"])) {
-            if ($params->check("key") && isset($post[$params->get("key")])) {
-                $zip1Key = $params->get("zip1", "zip1");
-                $zip2Key = $params->get("zip2", "zip2");
-                $prefKey = $params->get("prefecture", "prefecture");
-                $address1Key = $params->get("address1", "address1");
+            $zip1Key = $params->get("zip1", "zip1");
+            $zip2Key = $params->get("zip2", "zip2");
+            $prefKey = $params->get("prefecture_id", "prefecture_id");
+            $address1Key = $params->get("address1", "address1");
 
-                // 郵便番号を住所情報に変換
-                $loader = new Vizualizer_Plugin("Address");
-                $zip = $loader->loadModel("Zip");
-                $zip->findByCode($post[$zip1Key] . $post[$zip2Key]);
+            // 郵便番号を住所情報に変換
+            $loader = new Vizualizer_Plugin("Address");
+            $zip = $loader->loadModel("Zip");
+            $zip->findByCode($post[$zip1Key] . $post[$zip2Key]);
 
-                // 都道府県をIDに変換
-                $prefecture = $loader->loadModel("Prefecture");
-                $prefecture->findByName($zip->state);
-                $zip->state_id = $prefecture->prefecture_id;
+            // 都道府県をIDに変換
+            $prefecture = $loader->loadModel("Prefecture");
+            $prefecture->findByName($zip->state);
+            $zip->state_id = $prefecture->prefecture_id;
 
-                // 結果を格納
-                $post->set($prefKey, $zip->state_id);
-                $post->set($address1Key, $zip->city . $zip->town);
+            // 結果を格納
+            $post->set($prefKey, $zip->state_id);
+            $post->set($address1Key, $zip->city . $zip->town);
 
-                $this->removeInput("search_zip");
+            $this->removeInput("search_zip");
+
+            if($params->check("redirect")){
+                $this->redirect($params->get("redirect"));
+            }else{
                 $this->reload();
             }
         }
